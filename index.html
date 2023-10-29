@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Belajar Canvas JS</title>
+  </head>
+  <body>
+    <canvas
+      id="world" width="500" height="500" style="border: 1px solid black"
+    ></canvas>
+
+    <script>
+      // Inisialisasi Canvas
+      let canvas = document.getElementById("world");
+      let context = canvas.getContext("2d");
+
+      // Import Assets
+      let bird = new Image();
+      bird.src = "bird.png";
+
+      let tuing = new Audio();
+      tuing.src = "tuing.mp3";
+      tuing.load();
+
+    
+
+      // State
+      let g = 0;
+      let xBird = 0;
+      let yBird = canvas.height / 2 - 100;
+      let wBird = 50;
+      let hBird = 50;
+      let kalah = false;
+      let poin = 0;
+
+      let pipaPairs = [
+        { xPipa: canvas.width, tinggiPipaAtas: 100 },
+        { xPipa: canvas.width + 200, tinggiPipaAtas: 150 },
+        // Tambahkan lebih banyak pasangan pipa di sini
+      ];
+
+      window.addEventListener("keydown", function () {
+        if (event.keyCode == 32) {
+          g = g - 20;
+
+          tuing.pause();
+          tuing.currentTime = 0;
+          tuing.play();
+        }
+      });
+
+      // Membuat FPS
+      window.setInterval(function () {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+      
+        g = g + 1;
+
+        context.drawImage(bird, xBird, yBird, wBird, hBird);
+
+        yBird = yBird + g;
+
+        if (yBird >= canvas.height - hBird) {
+          console.log("Game Over");
+          kalah = true;
+          g = 0;
+          xBird = 0;
+          yBird = canvas.height / 2 - 100;
+          wBird = 50;
+          hBird = 50;
+        }
+        if (yBird < 0) {
+          yBird = 0;
+          g = 0;
+        }
+
+        pipaPairs.forEach(function (pipaPair) {
+          pipaPair.xPipa -= 5; // Menggerakkan pipa ke kiri
+          if (xBird >= pipaPair.xPipa + 50) {
+         if (!pipaPair.sudahLewat) {
+         poin++; // nambah 1 poin kalo ngelewatin pipa
+         pipaPair.sudahLewat = false;
+         }
+         }
+          // Pipa atas
+          context.fillStyle = "olive";
+          context.fillRect(pipaPair.xPipa, 0, 50, pipaPair.tinggiPipaAtas);
+          context.fillStyle = "black";
+          context.strokeRect(
+            pipaPair.xPipa,
+            0,
+            50,
+            pipaPair.tinggiPipaAtas
+          );
+
+          // Pipa bawah
+          context.fillStyle = "olive";
+          context.fillRect(
+            pipaPair.xPipa,
+            pipaPair.tinggiPipaAtas + 150,
+            50,
+            canvas.height - pipaPair.tinggiPipaAtas - 150
+          );
+          context.fillStyle = "black";
+          context.strokeRect(
+            pipaPair.xPipa,
+            pipaPair.tinggiPipaAtas + 150,
+            50,
+            canvas.height - pipaPair.tinggiPipaAtas - 150
+          );
+
+          if (
+            xBird + wBird >= pipaPair.xPipa &&
+            xBird <= pipaPair.xPipa + 50
+          ) {
+            if (
+              yBird <= pipaPair.tinggiPipaAtas ||
+              yBird + hBird >= pipaPair.tinggiPipaAtas + 150
+            ) {
+              kalah = true;
+            }
+          }
+
+          // Cek jika pipa mencapai ujung layar
+          if (pipaPair.xPipa <= -50) {
+            pipaPair.xPipa = canvas.width;
+            pipaPair.tinggiPipaAtas = Math.floor(
+              Math.random() * (canvas.height - 300)
+            ) + 50;
+          }
+        });
+
+        if (kalah) {
+          gameover.play();
+          alert("Game Over | Score: " + poin);
+          kalah = false;
+          xBird = 0;
+          yBird = canvas.height / 2 - 100;
+          wBird = 50;
+          hBird = 50;
+          poin = 0;
+          pipaPairs = [
+            { xPipa: canvas.width, tinggiPipaAtas: 100 }, 
+            { xPipa: canvas.width + 200, tinggiPipaAtas: 150 },
+            // Tambahkan lebih banyak pasangan pipa di sini
+          ];
+
+          gameover.pause(); // stop audio
+        }
+      }, 1000 / 30);
+    </script>
+  </body>
+</html>
